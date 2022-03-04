@@ -5,7 +5,7 @@ Prove the equivalence of a pair of definitions for **flat modules**.
 
 ## Definition 1 (ideal_def):
 
-The definition of a *flat module implemented in Lean is:
+The definition of a *flat module* implemented in Lean is:
 
 Let `R` be a commutative ring, and `M` and `R`-module. The module is *flat* if for all finitely
 generated ideals `I` of `R`, the canonical map `I ⊗ M →ₗ M` is injective. 
@@ -24,10 +24,10 @@ This has as a consequence the more general [theorem](https://stacks.math.columbi
 
 Let `M` be an `R`-module. TFAE:
 
-1. `M` is flat over `R` (according to definition 2)
+1. `M` is flat over `R` (according to **ses_def**)
 2. For every injection `N →ₗ N'` of `R`-modules, the map `N ⊗ M →ₗ N' ⊗ M` is injective. 
 3. For every idea `I` of `R`, the induced map `I ⊗ M →ₗ M` is injective.
-4. `M` is flat over `R` in the Lean sense (d)
+4. `M` is flat over `R` in the Lean sense (**ideal_def**)
 
 ## Proof Sketch: 
 
@@ -39,7 +39,7 @@ The proof sketch in the Stacks project goes as follows:
     `I →ₗ R →ₗ R / I`, and exactness in the middle of `I ⊗ M →ₗ R ⊗ M ≃ₗ M →ₗ (R / I) ⊗ M` 
     implies that the left map is injective.
 
-    New goal: Show **ideal_def** implies **ses_def**
+    New goal (1): Show **ideal_def** implies **ses_def**
 
 2. Show that in order to prove **ses_def** it is sufficient to prove `_ ⊗ M` preserves injectives.
     
@@ -50,7 +50,7 @@ The proof sketch in the Stacks project goes as follows:
     * The first and third maps are surjective always. 
     * If we show the second and forth maps are injective, then **ses_def** follows. (footnote 1)
 
-    New goal: Given `K →ₗ N` an injective map of `R`-modules, show `K ⊗ M →ₗ N ⊗ M` is injective.
+    New goal (2): If `K →ₗ N` is injective, then `K ⊗ M →ₗ N ⊗ M` is injective.
 
 3. Show that in order to prove (2) it is enough to show `_ ⊗ M` preserves injective maps `K →ₗ N`
 when `K` is a finite `R`-module. 
@@ -59,8 +59,7 @@ when `K` is a finite `R`-module.
     show that `x : ker (K ⊗ M →ₗ N ⊗ M)` is zero, we can restrict to a finite submodule `K'`
     of `K` that contains `x`.
 
-    New goal: Given `K →ₗ N` an injective map of `R`-modules with `K` finite, show `K ⊗ M →ₗ N ⊗ M`
-    is injective.
+    New goal (3): If `K →ₗ N` is injective with `K` finite, show `K ⊗ M →ₗ N ⊗ M` is injective.
 
 4. In order to show (3) it suffces to show that `_ ⊗ M` preserves injective maps `K →ₗ N` when both
 `K` and `N` are finite `R`-modules.
@@ -74,17 +73,17 @@ when `K` is a finite `R`-module.
     a `j ≥ i` such that `μ i j (x i) = 0`. (this lemma also may follow from 
     [something else](https://stacks.math.columbia.edu/tag/00D6))
 
-    New goal: Given `K →ₗ N` an injective map of `R`-modules with `K` and `N` finite, 
-    show `K ⊗ M →ₗ N ⊗ M` is injective.
+    New goal (4): If `K →ₗ N` is injective with with `K` and `N` finite, show `K ⊗ M →ₗ N ⊗ M`
+    is injective.
 
 5. In order to show (4) it suffices to show that `_ ⊗ M` preserves injective maps of the form
-`L →ₗ ⊕^n R`.
+`L →ₗ ⊕ⁿ R`.
 
-    Because `N` is finite, we can write it as `⊕^n R / L`, and `K = L'/L` for some submodules `L`
-    and `L'` of `⊕^n R`. In order to show `K ⊗ M →ₗ N ⊗ M` is injective it suffices to show both
-    `L ⊗ M →ₗ ⊕^n M` and `L' ⊗ M →ₗ ⊕^n M` are injective.
+    Because `N` is finite, we can write it as `⊗ⁿ R / L`, and `K = L'/L` for some submodules `L`
+    and `L'` of `⊕ⁿ R`. In order to show `K ⊗ M →ₗ N ⊗ M` is injective it suffices to show both
+    `L ⊗ M →ₗ ⊕ⁿ M` and `L' ⊗ M →ₗ ⊕ⁿ M` are injective.
 
-    New goal: Given `L →ₗ ⊕^n R` injective, show that `L ⊗ M →ₗ ⊕^n M` is injective. 
+    New goal (5): Given `L →ₗ ⊕ⁿ R` injective, show that `L ⊗ M →ₗ ⊕ⁿ M` is injective. 
 
 6. We now prove (5) by induction on `n`. 
 
@@ -92,15 +91,15 @@ when `K` is a finite `R`-module.
     as in (3) to reduce to the case when `L` is a finite submodule (finitely generated ideal), 
     which is precisely **ideal_def**
 
-    For the induction step if we consider the meet of the submodules `L` and `R ⊕ 0^(n-1)` written
-    as `L'`, then `L'' = L'/L` is a submodule of `⊕^(n-1) R` and we obtain the diagram
+    For the induction step if we consider the meet of the submodules `L` and `R ⊕ 0ⁿ⁻¹` written
+    as `L'`, then `L'' = L'/L` is a submodule of `⊕ⁿ⁻¹ R` and we obtain the diagram
 
             `L' ⊗ M` -----> `L ⊗ M` -----> `L'' ⊗ M` -----> `0`
               |                 |                |
               |                 |                |
               |                 |                |
               v                 v                v
-    `0` ---> `M` ----------> `⊕^n M` -----> `⊕^(n-1) M` ---> `0`
+    `0` ---> `M` ----------> `⊕ⁿ M` -----> `⊕ⁿ⁻¹ M` -------> `0`
 
     where the bottom row is obviously exact, the top row is exact as well, and our induction
     hypothesis implies the left and right vertical arrows are injective. Hence the middle arrow
@@ -108,10 +107,39 @@ when `K` is a finite `R`-module.
 
 ## Todo:
 
+* Prove that `0 ⊗ M = 0` by maybe doing some minor lemmas about pure tensors with components equal
+to zero
+* Write some lemmas about elements in a module equaling zero if and only if there is some finite
+submodule 
+
 ## Progress:
 
 ## Where to go from here?:
 
 * Maybe defining `Tor`?
+-/
 
+/-
+## Subgoal 1: Prove that any module equivalent to the direct limit of its finite submodules.
+
+This is a lemma that is used repeatedly in the argument above, and can generally play an important
+rule in strengthening theorems in commutative algebra about finitely generated/finite things.
+
+### Pieces
+
+* Have `linear_map.ker_eq_bot_of_injective`, but it appears that the converse isn't implemented
+in mathlib yet?
+Ok that's not true, we have `mono_iff_ker_eq_bot` and `mono_iff_injective` which we can use to
+translate back and forth, so the lemma should be super easy. 
+* Want to prove some basic stuff about `0 ⊗ m = 0`
+-/
+
+
+
+/-
+theorem main_result : injective f → injective (tensor_product.map (@linear_map.id R P _ _ _) f) :=
+begin
+intro h,
+sorry
+end
 -/

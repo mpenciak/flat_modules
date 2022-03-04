@@ -1,8 +1,8 @@
 [package]
 name = "flatstuff"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.39.2"
+lean_version = "leanprover-community/lean:3.40.0"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "8413f078fa019c70d94c820bdaee499735d2860a"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "0ec8e6a05e81ccd51cc04ad271653abfd42e222f"}
