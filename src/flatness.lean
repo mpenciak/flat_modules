@@ -108,12 +108,13 @@ when `K` is a finite `R`-module.
 
 ## Todo:
 
-* Prove that `0 ⊗ M = 0` by maybe doing some minor lemmas about pure tensors with components equal
-to zero
-* Write some lemmas about elements in a module equaling zero if and only if there is some finite
-submodule 
+* Show that any module is a direct limit of its finitely generated submodules. 
 
 ## Progress:
+
+* Proved that `0 ⊗ M = 0`
+* Defined and proved that finite submodules are a directed system
+* Showed that if the components of a map out of a direct limit are injective, then the map itself is
 
 ## Where to go from here?:
 
@@ -135,29 +136,8 @@ translate back and forth, so the lemma should be super easy.
 * Want to prove some basic stuff about `0 ⊗ m = 0`
 -/
 
-/-
-theorem main_result : injective f → injective (tensor_product.map (@linear_map.id R P _ _ _) f) :=
-begin
-intro h,
-sorry
-end
--/
-
-/-
-I SEE! So the way we're going to go from a property about all modules to a property about finitely
-generated modules is by using directed_limit.induction_on !!!! (in `algebra.direct_limit`)
--/
-
-/-
-Ok I gotta just start doing it.
--/
-import ring_theory.flat
-
-universes u v
-
-variables (R : Type u) [comm_ring R]
-variables (M : Type v) [add_comm_group M] [module R M]
-variable (s : finset M)
-
-
--- lemma result5 
+-- theorem main_result : injective f → injective (tensor_product.map (@linear_map.id R P _ _ _) f) :=
+-- begin
+-- intro h,
+-- sorry
+-- end
