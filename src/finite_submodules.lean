@@ -2,7 +2,6 @@ import ring_theory.noetherian
 import algebra.direct_limit
 import tactic
 
-set_option pp.beta true
 set_option trace.simplify.rewrite true
 
 /-
@@ -61,38 +60,15 @@ Not sure I need any of this actually...
 --   add_smul := _,
 --   zero_smul := _ }
 
-instance have_sup : has_sup (fin_submodule R M) := 
-{ sup := λ⟨N, hN⟩ ⟨P, hP⟩, ⟨N ⊔ P, submodule.fg_sup hN hP⟩ }
+instance : has_sup (fin_submodule R M) := 
+{ sup := λ N P, ⟨↑N ⊔ ↑P, submodule.fg_sup N.prop P.prop⟩ }
 
-instance have_le : has_le (fin_submodule R M) := { le := λ⟨N, _⟩ ⟨P, _⟩, N ≤ P }
+instance : partial_order (fin_submodule R M) := 
+subtype.partial_order _
 
-instance have_lt : has_lt (fin_submodule R M) := { lt := λ⟨N, _⟩ ⟨P, _⟩, N ≤ P ∧ ¬ P ≤ N }
-
-instance have_partial_order : partial_order (fin_submodule R M) := 
-{ le_refl := λ⟨N, _⟩, partial_order.le_refl N,
-  le_trans := λ⟨N, _⟩ ⟨O, _⟩ ⟨P, _⟩, partial_order.le_trans N O P,
-  lt_iff_le_not_le := 
-  begin
-    rintros ⟨N, hN⟩ ⟨O, hO⟩,
-    split,
-    { rintros ⟨h1, h2⟩,
-      exact ⟨h1, h2⟩, },
-    { rintros ⟨h1, h2⟩,
-      exact ⟨h1, h2⟩ },
-  end,
-  le_antisymm := 
-  begin
-    rintros ⟨N, hN⟩ ⟨O, hO⟩ h1 h2,
-    change N ≤ O  at h1,
-    change O ≤ N at h2,
-    congr, 
-    exact partial_order.le_antisymm N O h1 h2,
-  end,
-  ..have_le R M,
-  ..have_lt R M }
-
-instance have_semilattice_sup : semilattice_sup (fin_submodule R M) := 
-{ le_sup_left := 
+instance : semilattice_sup (fin_submodule R M) := 
+{ sup := (⊔),
+  le_sup_left := 
   begin
     rintros ⟨N, hN⟩ ⟨O, hO⟩,
     exact complete_lattice.le_sup_left N O,
@@ -111,8 +87,7 @@ instance have_semilattice_sup : semilattice_sup (fin_submodule R M) :=
     rw sup_le_iff,
     exact ⟨h1, h2⟩,
   end,
-  .. have_partial_order R M,
-  .. have_sup R M }
+  ..partial_order R M}
 
 instance have_directed : is_directed (fin_submodule R M) (≤) := { directed := 
 begin
@@ -242,39 +217,19 @@ universes u v
 variables {R : Type u} {M : Type v} [ring R] [add_comm_group M] [module R M] 
 [dec_ι : decidable_eq (fin_submodule R M)] -- Do I need to prove this?
 
-
 -- Ok I am definitely doing something wrong... All these definitions are like pulling teeth
 def associated_inclusion {N P : fin_submodule R M} (h : N ≤ P) : N.1 →ₗ[R] P.1 := 
-{ to_fun := λ⟨x, hx⟩, ⟨x, begin clear _x, clear _fun_match, cases N, cases P, 
-  change N_val ≤ P_val at h,
-  simp [h hx],
-  end⟩,
-  map_add' := λ⟨x, hx⟩ ⟨y, hy⟩, by refl,
-  map_smul' := λr ⟨x, hx⟩, by refl }
+submodule.of_le h
 
 def associated_system (N P : fin_submodule R M) : N ≤ P → ↥N.1 →ₗ[R] ↥P.1 := λh, associated_inclusion h
 
 def inclusion_of_comp (N : fin_submodule R M) : N.1 →ₗ[R] M := 
-{ to_fun := λx, x,
-  map_add' := by simp,
-  map_smul' := by simp }
+submodule.subtype N.1
 
 def system_of_inclusions : Π (N : fin_submodule R M), N.1 →ₗ[R] M := λN, inclusion_of_comp N
 
 lemma inc_is_injective {N P : fin_submodule R M} (h : N ≤ P) : injective $ associated_inclusion h :=
-begin
-rintros ⟨x, hx⟩ ⟨y, hy⟩ heq,
-dunfold fin_submodule.associated_inclusion at heq,
-dsimp at heq,
-congr,
-dunfold fin_submodule.associated_inclusion._match_1 at heq,
-cases heq,
-refl
-end
-
-
-
-
+λ x y heq, subtype.ext $ by injection heq
 
 -- variable N : submodule R M
 
@@ -282,18 +237,9 @@ end
 
 #check @associated_system R M _ _ _ 
 
--- @[instance]def inst1 :Π (N : fin_submodule R M), add_comm_group ↥N := λ⟨N, hN⟩, N.add_comm_group
-
-@[instance]def inst1 : Π (N : fin_submodule R M), add_comm_group ↥N.val := λ⟨N, hN⟩, submodule.add_comm_group N
-
--- @[instance]def inst2 : Π (N : fin_submodule R M), module R ↥N.val := λ⟨N, hN⟩, submodule.module N
-
-#check @module.direct_limit R _ (fin_submodule R M) _ _ (λN, N.1) _ (λ⟨K, hK⟩, submodule.module K) begin
-have H := @associated_system R M _ _ _ ,
-sorry,
+#check @module.direct_limit R _ (fin_submodule R M) _ _ (λN, N.1) _ _ begin
+  exact @associated_system R M _ _ _ ,
 end
-
-#check @module.direct_limit
 
 end fin_submodule
 end module_from_finite_submodules
