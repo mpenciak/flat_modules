@@ -71,7 +71,8 @@ when `K` is a finite `R`-module.
     If `(M i, μ i j)` is a directed system of modules with `M = lim M i` (write `μ i : M i →ₗ M` for
     the associated map) then `x i : M i` maps to zero in `M` via `μ i` if and only if there exists
     a `j ≥ i` such that `μ i j (x i) = 0`. (this lemma also may follow from 
-    [something else](https://stacks.math.columbia.edu/tag/00D6))
+    [something else](https://stacks.math.columbia.edu/tag/00D6)) 
+    [note this is already done!!!!]
 
     New goal (4): If `K →ₗ N` is injective with with `K` and `N` finite, show `K ⊗ M →ₗ N ⊗ M`
     is injective.
@@ -134,8 +135,6 @@ translate back and forth, so the lemma should be super easy.
 * Want to prove some basic stuff about `0 ⊗ m = 0`
 -/
 
-
-
 /-
 theorem main_result : injective f → injective (tensor_product.map (@linear_map.id R P _ _ _) f) :=
 begin
@@ -143,3 +142,22 @@ intro h,
 sorry
 end
 -/
+
+/-
+I SEE! So the way we're going to go from a property about all modules to a property about finitely
+generated modules is by using directed_limit.induction_on !!!! (in `algebra.direct_limit`)
+-/
+
+/-
+Ok I gotta just start doing it.
+-/
+import ring_theory.flat
+
+universes u v
+
+variables (R : Type u) [comm_ring R]
+variables (M : Type v) [add_comm_group M] [module R M]
+variable (s : finset M)
+
+
+-- lemma result5 
