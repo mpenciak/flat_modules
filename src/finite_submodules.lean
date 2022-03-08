@@ -139,8 +139,8 @@ yet so I wrote it (before I realized I couldn't use it lol)
 -/
 def equiv_with_top [order_top ι] : module.direct_limit G f ≃ₗ[R] G ⊤  := { 
   to_fun := map_to_top G f,
-  map_add' := by simp, -- kind of slow
-  map_smul' := by simp, -- kind of slow
+  map_add' := by sorry, -- kind of slow TODO: Worry about these as well
+  map_smul' := by sorry, -- kind of slow
   inv_fun := of R ι G f ⊤,
   left_inv := 
   begin
@@ -164,8 +164,8 @@ variables {P : Type u} [add_comm_group P] [module R P] (h : Π i j, injective $ 
 
 def direct_limit_map_component (g : module.direct_limit G f →ₗ[R] P) : Π i, G i →ₗ[R] P := λi, 
 { to_fun := g ∘ (module.direct_limit.of R ι G f i),
-  map_add' := by simp, -- kind of slow
-  map_smul' := by simp  -- kind of slow}
+  map_add' := by sorry, -- kind of slow
+  map_smul' := by sorry  -- kind of slow}
 }
 
 variables [is_directed ι (≤)] [nonempty ι] 
@@ -216,6 +216,9 @@ universes u v
 
 variables {R : Type u} {M : Type v} [ring R] [add_comm_group M] [module R M] 
 [dec_ι : decidable_eq (fin_submodule R M)] -- Do I need to prove this?
+/-
+TODO: Answer is yes, but I should figure out what decidable_eq entails later. (maybe some subtype stuff)
+-/
 
 -- Ok I am definitely doing something wrong... All these definitions are like pulling teeth
 def associated_inclusion {N P : fin_submodule R M} (h : N ≤ P) : N.1 →ₗ[R] P.1 := 
@@ -231,15 +234,40 @@ def system_of_inclusions : Π (N : fin_submodule R M), N.1 →ₗ[R] M := λN, i
 lemma inc_is_injective {N P : fin_submodule R M} (h : N ≤ P) : injective $ associated_inclusion h :=
 λ x y heq, subtype.ext $ by injection heq
 
+/-
+TODO: State and prove this lemma by refl, then fix the by refl below with simp
+-/
+-- @[simp]lemma commutative_diagram {N P : fin_submodule R M} (h : N ≤ P)
+
 -- variable N : submodule R M
 
 -- #check N.module
 
-#check @associated_system R M _ _ _ 
+-- #check associated_system
 
-#check @module.direct_limit R _ (fin_submodule R M) _ _ (λN, N.1) _ _ begin
-  exact @associated_system R M _ _ _ ,
-end
+-- #check @associated_system R M _ _ _ 
+
+-- #check @module.direct_limit R _ (fin_submodule R M) _ _ (λN, N.1) _ _ begin
+--   exact @associated_system R M _ _ _ ,
+-- end
+
+
+-- #check module.direct_limit.lift R (fin_submodule R M) (λN, N.1) associated_system system_of_inclusions (λN P hNP x, by refl) 
+
+-- #check module.direct_limit
+
+def fg_direct_limit_to_module : @module.direct_limit R _ (fin_submodule R M) dec_ι _ (λN, N.1) _ _ (@associated_system R M _ _ _) →ₗ[R] M := module.direct_limit.lift R (fin_submodule R M) (λN, N.1) associated_system system_of_inclusions (λN P hNP x, by refl) 
+
+/-
+There has GOT to be a `to_lin_equiv` or something that says if I can show it's surjective with zero kernel I'm done
+-/
+def equiv_with_module : @module.direct_limit R _ (fin_submodule R M) dec_ι _ (λN, N.1) _ _ (@associated_system R M _ _ _) ≃ₗ[R] M := sorry
+-- { to_fun := _,
+--   map_add' := _,
+--   map_smul' := _,
+--   inv_fun := _,
+--   left_inv := _,
+--   right_inv := _ }
 
 end fin_submodule
 end module_from_finite_submodules
