@@ -1,8 +1,10 @@
 import ring_theory.noetherian
 import algebra.direct_limit
 import tactic
+import linear_algebra.isomorphisms
 
 set_option trace.simplify.rewrite true
+set_option pp.beta true
 
 /-
 Establish some basic properties about the order structure on the type of finitely
@@ -103,7 +105,9 @@ end }
 
 
 -- Might have to worry about this at some point too?
--- instance have_something : nonempty (fin_submodule R M) := _
+-- instance have_something : nonempty (fin_submodule R M) := begin
+
+-- end
 
 end fin_submodule
 end basic_properties
@@ -256,18 +260,113 @@ TODO: State and prove this lemma by refl, then fix the by refl below with simp
 
 -- #check module.direct_limit
 
+variables (R) (M)
+
 def fg_direct_limit_to_module : @module.direct_limit R _ (fin_submodule R M) dec_ι _ (λN, N.1) _ _ (@associated_system R M _ _ _) →ₗ[R] M := module.direct_limit.lift R (fin_submodule R M) (λN, N.1) associated_system system_of_inclusions (λN P hNP x, by refl) 
 
+def finset_to_fin_submodule : finset M → fin_submodule R M := λs, ⟨submodule.span R s, by use s⟩
+
+def elt_to_fin_submodule : M → fin_submodule R M := λx, finset_to_fin_submodule R M {x}
+
+@[simp]lemma in_submodule_span_of_self (x : M) : x ∈ @submodule.span R M _ _ _ { x }  := submodule.mem_span_singleton_self x
+
+@[simp]lemma in_elt_to_fin_submodule (x : M) : x ∈ (elt_to_fin_submodule R M x).val:=
+begin
+unfold elt_to_fin_submodule,
+unfold finset_to_fin_submodule,
+simp,
+end
+
+@[simp]lemma finset_to_fin_submodule_eq (x : M) : (@finset_to_fin_submodule R M _ _ _ { x }).val = @submodule.span R M _ _ _ { x } := begin
+unfold finset_to_fin_submodule,
+simp,
+end
+
+@[simp]lemma stupidlemma (x : M) : x ∈ (elt_to_fin_submodule R M x).val :=
+begin
+unfold elt_to_fin_submodule,
+unfold finset_to_fin_submodule,
+simp,
+end
+
+#check @fg_direct_limit_to_module R M _ _ _ dec_ι
+
+#check  @module.direct_limit R _ (fin_submodule R M) dec_ι _ (λN, N.1) _ _ (@associated_system R M _ _ _)
+
+variable [nonempty (fin_submodule R M)]
+
+#check @module.direct_limit.exists_of R _ (fin_submodule R M) _ _ (λN, N.1) _ _ (@associated_system R M _ _ _) _ _ 
+
+lemma triv_kernel : linear_map.ker (@fg_direct_limit_to_module R M _ _ _ dec_ι) = ⊥  := 
+begin
+ext x,
+simp,
+split,
+{ intro h1,
+  have H := @module.direct_limit.exists_of R _ (fin_submodule R M) _ _ (λN, N.1) _ _ (@associated_system R M _ _ _) _ _ x,
+  cases H with N hN,
+  cases hN with y hy,
+  rw ← hy,
+  rw ← hy at h1,
+  unfold fg_direct_limit_to_module at h1,
+  rw module.direct_limit.lift_of at h1,
+  have main_H : y = 0 := by
+  {
+    unfold system_of_inclusions at h1,
+    unfold inclusion_of_comp at h1,
+    simp at h1,
+    exact h1
+  },
+  rw main_H,
+  simp,
+  },
+{ intro h,
+  unfold fg_direct_limit_to_module,
+  simp [h]}
+end
+
+def weirdmap (x : M) : ↥((elt_to_fin_submodule R M x).val) := ⟨x, begin unfold elt_to_fin_submodule, unfold finset_to_fin_submodule, simp, end⟩
+
+
+variable z : M
+
+#check elt_to_fin_submodule R M 
+
+#check @module.direct_limit.of R _ (fin_submodule R M) _ _ (λN, N.1) _ _ (@associated_system R M _ _ _) (elt_to_fin_submodule R M z) 
+
+lemma am_surjective [dec_ι : decidable_eq (fin_submodule R M)]: function.surjective $ fg_direct_limit_to_module R M :=
+begin
+intro x,
+use @module.direct_limit.of R _ (fin_submodule R M) _ _ (λN, N.1) _ _ (@associated_system R M _ _ _) (elt_to_fin_submodule R M x) (weirdmap R M x),
+unfold fg_direct_limit_to_module,
+rw module.direct_limit.lift_of,
+unfold system_of_inclusions,
+unfold inclusion_of_comp,
+simp,
+unfold weirdmap,
+simp,
+end
 /-
-There has GOT to be a `to_lin_equiv` or something that says if I can show it's surjective with zero kernel I'm done
+There has GOT to be a `to_lin_equiv` or something that says if I can show it's surjective with zero kernel I'm done. duh first isomorphism theorem
 -/
-def equiv_with_module : @module.direct_limit R _ (fin_submodule R M) dec_ι _ (λN, N.1) _ _ (@associated_system R M _ _ _) ≃ₗ[R] M := sorry
--- { to_fun := _,
---   map_add' := _,
---   map_smul' := _,
---   inv_fun := _,
---   left_inv := _,
---   right_inv := _ }
+
+#check linear_map.quot_ker_equiv_of_surjective (fg_direct_limit_to_module R M) (am_surjective R M)
+#check triv_kernel R M
+#check @submodule.quot_equiv_of_eq_bot R (module.direct_limit (λ (N : fin_submodule R M), ↥(N.val)) associated_system) _ _ _ ⊥ (by refl) 
+
+#check @linear_equiv.symm R R (module.direct_limit (λ (N : fin_submodule R M), ↥(N.val)) associated_system ⧸ ⊥) M _ _ _ _ 
+
+
+-- #check @linear_equiv.trans R R R 
+
+noncomputable def equiv_with_module : @module.direct_limit R _ (fin_submodule R M) dec_ι _ (λN, N.1) _ _ (@associated_system R M _ _ _) ≃ₗ[R] M := 
+begin
+  have H1 := linear_map.quot_ker_equiv_of_surjective (fg_direct_limit_to_module R M) (am_surjective R M),
+  rw triv_kernel R M at H1,
+  simp at H1,
+  have H2 := @submodule.quot_equiv_of_eq_bot R (module.direct_limit (λ (N : fin_submodule R M), ↥(N.val)) associated_system) _ _ _ ⊥ (by refl),
+  exact linear_equiv.trans H2.symm H1,
+end
 
 end fin_submodule
 end module_from_finite_submodules
