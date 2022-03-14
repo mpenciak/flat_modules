@@ -166,11 +166,7 @@ def equiv_with_top [order_top ι] : module.direct_limit G f ≃ₗ[R] G ⊤  := 
 
 variables {P : Type u} [add_comm_group P] [module R P] (h : Π i j, injective $ f i j) 
 
-def direct_limit_map_component (g : module.direct_limit G f →ₗ[R] P) : Π i, G i →ₗ[R] P := λi, 
-{ to_fun := g ∘ (module.direct_limit.of R ι G f i),
-  map_add' := by sorry, -- kind of slow
-  map_smul' := by sorry  -- kind of slow}
-}
+def direct_limit_map_component (g : module.direct_limit G f →ₗ[R] P) : Π i, G i →ₗ[R] P := λi, g ∘ₗ (module.direct_limit.of R ι G f i)
 
 variables [is_directed ι (≤)] [nonempty ι] 
 
