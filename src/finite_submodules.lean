@@ -258,7 +258,7 @@ open _root_.submodule (quot_equiv_of_eq_bot)
 noncomputable def equiv_with_module : direct_limit (λ (N : fin_submodule R M), N) le_system ≃ₗ[R] M 
 := begin
 have H1 := quot_ker_equiv_of_surjective (fg_limit_to_module R M) (fg_limit_to_module_surjective R),
-have H2 := quot_equiv_of_eq_bot (⊥ : submodule R (module.direct_limit (λ (N : fin_submodule R M), N) le_system)) (rfl),
+have H2 := quot_equiv_of_eq_bot (⊥ : submodule R (direct_limit (λ (N : fin_submodule R M), N) le_system)) (rfl),
 rw inc_kernel_eq_bot R at H1,
 exact H2.symm.trans H1,
 end
