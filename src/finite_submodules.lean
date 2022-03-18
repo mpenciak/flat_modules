@@ -218,7 +218,7 @@ rw finset.coe_singleton,
 exact submodule.mem_span_singleton_self x
 end
 
-lemma inc_kernel_eq_bot : linear_map.ker (fg_limit_to_module R M) = ⊥ := 
+lemma inc_kernel_eq_bot : (fg_limit_to_module R M).ker = ⊥ := 
 begin
 ext x,
 rw [submodule.mem_bot, linear_map.mem_ker],
@@ -241,7 +241,7 @@ end
 -- TODO: Change this name eventually once I understand why I should or shouldn't have to define this
 def weirdmap (x : M) : ↥((elt_to_fin_submodule R x).val) := ⟨x, in_elt_to_fin_submodule R x⟩
 
-lemma fg_limit_to_module_surjective: function.surjective $ fg_limit_to_module R M :=
+lemma fg_limit_to_module_surjective: function.surjective (fg_limit_to_module R M) :=
 begin
 intro x,
 existsi of R (fin_submodule R M) 
@@ -252,12 +252,11 @@ unfold module_inclusion,
 simp only [weirdmap, submodule.coe_subtype, submodule.coe_mk]
 end
 
-open linear_map (quot_ker_equiv_of_surjective)
 open _root_.submodule (quot_equiv_of_eq_bot)
 
 noncomputable def equiv_with_module : direct_limit (λ (N : fin_submodule R M), N) le_system ≃ₗ[R] M 
 := begin
-have H1 := quot_ker_equiv_of_surjective (fg_limit_to_module R M) (fg_limit_to_module_surjective R),
+have H1 := (fg_limit_to_module R M).quot_ker_equiv_of_surjective (fg_limit_to_module_surjective R),
 have H2 := quot_equiv_of_eq_bot (⊥ : submodule R (direct_limit (λ (N : fin_submodule R M), N) le_system)) (rfl),
 rw inc_kernel_eq_bot R at H1,
 exact H2.symm.trans H1,
