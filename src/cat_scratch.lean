@@ -3,9 +3,20 @@ import finite_submodules
 import category_theory.category.preorder
 import algebra.category.Module.monoidal
 
+section silly_lemma
 
+universes u v
+
+variables {R : Type u} [ring R]
+variables {M N P : Type v} [add_comm_group M] [add_comm_group N] [add_comm_group P] 
+[module R M] [module R N] [module R P]
+variables (f : M →ₗ[R] N) (g : N →ₗ[R] P) 
+
+lemma silly_lemma : Module.of_hom f ≫ Module.of_hom g = Module.of_hom (g ∘ₗ f) := by refl
+
+end silly_lemma
 /-
-I should be able to copy some of the below when I eventually get to it
+I should be able to copy some of the below when I eventually get to it, but ideally the general result is done first and then I copy it
 -/
 -- universes u v
 
@@ -30,14 +41,20 @@ corresponding statement in terms of colimits in `Module R`
 -/
 section categorical_glue
 
-universes u v w u₁
+universes u v
 
 variables {R : Type u} [ring R]
 variables {ι : Type v} [decidable_eq ι] [preorder ι]
-variables (G : ι → Type w) [Π i, add_comm_group (G i)] [Π i, module R (G i)]
+variables (G : ι → Type v) [Π i, add_comm_group (G i)] [Π i, module R (G i)]
 variables (f : Π i j, i ≤ j → G i →ₗ[R] G j) [directed_system G (λ i j h, f i j h)]
 
-#check module.directed_system.map_self f 
+variables (i j : ι) (k : i ≤ j)
+
+lemma of_f_comp (i j : ι) (hij : i ≤ j) : module.direct_limit.of R ι G f j ∘ₗ (f i j hij) = module.direct_limit.of R ι G f i :=
+begin
+  ext,
+  simp only [linear_map.coe_comp, function.comp_app, module.direct_limit.of_f],
+end
 
 def associated_functor : ι ⥤ Module R := { obj := λi, Module.of R (G i),
   map := λi j k, Module.of_hom (f i j k.down.down),
@@ -64,6 +81,16 @@ def associated_functor : ι ⥤ Module R := { obj := λi, Module.of R (G i),
 Show this guy satisfies the universal property! (probably have the lemmas in the direct_limits.lean file)
 -/
 
-#check Module.of R (module.direct_limit G f)
+
+example : category_theory.limits.cocone (associated_functor G f) := { X := Module.of R (module.direct_limit G f),
+  ι := { app := λ i, Module.of_hom $ module.direct_limit.of R ι G f i,
+  naturality' := begin
+    intros i j k,
+    dunfold associated_functor,
+    rw silly_lemma,
+    rw of_f_comp,
+    ext,
+    simp,
+  end } } 
 
 end categorical_glue
