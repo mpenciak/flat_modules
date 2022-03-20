@@ -50,7 +50,8 @@ variables (f : Π i j, i ≤ j → G i →ₗ[R] G j) [directed_system G (λ i j
 
 variables (i j : ι) (k : i ≤ j)
 
-lemma of_f_comp (i j : ι) (hij : i ≤ j) : module.direct_limit.of R ι G f j ∘ₗ (f i j hij) = module.direct_limit.of R ι G f i :=
+lemma of_f_comp (i j : ι) (hij : i ≤ j) : 
+module.direct_limit.of R ι G f j ∘ₗ (f i j hij) = module.direct_limit.of R ι G f i :=
 begin
   ext,
   simp only [linear_map.coe_comp, function.comp_app, module.direct_limit.of_f],
@@ -77,20 +78,25 @@ def associated_functor : ι ⥤ Module R := { obj := λi, Module.of R (G i),
     exact H.symm,
   end }
 
-/-
-Show this guy satisfies the universal property! (probably have the lemmas in the direct_limits.lean file)
--/
-
-
-example : category_theory.limits.cocone (associated_functor G f) := { X := Module.of R (module.direct_limit G f),
+def def1 : category_theory.limits.cocone (associated_functor G f) := { X := Module.of R (module.direct_limit G f),
   ι := { app := λ i, Module.of_hom $ module.direct_limit.of R ι G f i,
   naturality' := begin
     intros i j k,
     dunfold associated_functor,
-    rw silly_lemma,
-    rw of_f_comp,
+    rw [silly_lemma, of_f_comp],
     ext,
-    simp,
+    refl,
   end } } 
 
+example : category_theory.limits.is_colimit (def1 G f) := { desc := λP, begin
+  apply Module.of_hom,
+  fapply module.direct_limit.lift,
+  intro i,
+  exact P.ι.app i,
+  intros i j hij x,
+  sorry
+end,
+  fac' := _,
+  uniq' := _ }
+ 
 end categorical_glue
