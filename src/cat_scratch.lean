@@ -2,6 +2,7 @@ import category_theory.limits.cones
 import finite_submodules
 import category_theory.category.preorder
 import algebra.category.Module.monoidal
+import linear_algebra.tensor_product
 
 /-
 For lack of a better name, I've included a few lemmas that helped translate between compositions of
@@ -16,11 +17,11 @@ variables {M N P : Type v} [add_comm_group M] [add_comm_group N] [add_comm_group
 [module R M] [module R N] [module R P]
 variables (f : M →ₗ[R] N) (g : N →ₗ[R] P) 
 
-lemma silly_lemma (x : M) : Module.of_hom g ((Module.of_hom f) x) = g (f x) := by refl
+lemma module_hom_ext (x : M) : Module.of_hom g ((Module.of_hom f) x) = g (f x) := by refl
 
-lemma silly_lemma2 : Module.of_hom f ≫ Module.of_hom g = Module.of_hom (g ∘ₗ f) := by refl
+lemma module_hom_comp : Module.of_hom f ≫ Module.of_hom g = Module.of_hom (g ∘ₗ f) := by refl
 
-lemma silly_lemma3 (x : M) : Module.of_hom g (f x) = g (f x) := by refl
+lemma module_hom_app (x : M) : Module.of_hom g (f x) = g (f x) := by refl
 
 end silly_lemmas
 
@@ -30,14 +31,20 @@ corresponding statement in terms of colimits in `Module R`
 -/
 section categorical_glue
 
-universes u 
+/-
+Note about universes: There's that some tricky stuff that I think is related to the Zulip chat 
+conversation about universes and direct limits. You would want `R : Type u`, `ι : Type v`, and 
+`G : ι → Type w` to be totally generic, but for our purposes it suffices for `G : ι → Type v` as
+we're interested in the `fin_submodule` case. But using some of that `ulift` stuff that's being
+talked about, it should be possible to make the results in this section more general. 
+-/
+universes u v
 
-variables {R : Type} [ring R]
+variables {R : Type u} [ring R]
 -- See comment below on `direct_lim_is_colim` about the `is_directed` and `nonempty` assumptions
-variables {ι : Type} [decidable_eq ι] [preorder ι] [is_directed ι (≤)] [nonempty ι] 
-variables (G : ι → Type) [Π i, add_comm_group (G i)] [Π i, module R (G i)]
+variables {ι : Type v} [decidable_eq ι] [preorder ι] [is_directed ι (≤)] [nonempty ι] 
+variables (G : ι → Type v) [Π i, add_comm_group (G i)] [Π i, module R (G i)]
 variables (f : Π i j, i ≤ j → G i →ₗ[R] G j) [directed_system G (λ i j h, f i j h)]
-variables (i j : ι) (hij : i ≤ j)
 
 lemma of_f_comp (i j : ι) (hij : i ≤ j) : 
 module.direct_limit.of R ι G f j ∘ₗ (f i j hij) = module.direct_limit.of R ι G f i :=
@@ -73,9 +80,11 @@ def direct_lim_as_cocone : category_theory.limits.cocone (associated_functor G f
   naturality' := begin
     intros i j k,
     dunfold associated_functor,
-    rw [silly_lemma2, of_f_comp],
+    rw [module_hom_comp, of_f_comp],
     ext,
     refl,
+    apply_instance, -- Weird behaviour when I added universes
+    apply_instance, -- Same here
   end } } 
 
 set_option trace.ext true
@@ -100,7 +109,7 @@ def direct_lim_is_colim : category_theory.limits.is_colimit (direct_lim_as_cocon
     dunfold direct_lim_as_cocone,
     ext1,
     simp only [Module.coe_comp, function.comp_app],
-    rw [silly_lemma, module.direct_limit.lift_of]
+    rw [module_hom_ext, module.direct_limit.lift_of]
   end,                                                         
   uniq' :=
   begin
@@ -114,7 +123,7 @@ def direct_lim_is_colim : category_theory.limits.is_colimit (direct_lim_as_cocon
     cases hi with z hz,
     rw ←hz,
     dsimp,
-    rw silly_lemma3,
+    rw module_hom_app,
     rw module.direct_limit.lift_of,
     specialize h i, 
     exact category_theory.congr_hom h z,
@@ -122,6 +131,39 @@ def direct_lim_is_colim : category_theory.limits.is_colimit (direct_lim_as_cocon
   }
 
 end categorical_glue
+
+
+/-
+The plan for this section is to prove that `lim (G i ⊗ M)` = `(lim G i) ⊗ M`. 
+This should be obvious, given the corresponding fact for colimits.
+
+Strictly speaking, I'm not sure the section above is totally necessary. We already have that any 
+module is a direct limit of its f.g. submodules, and we know direct limits are colimits so we
+should be able to push the whole flat modules argument through in the language of category theory,
+but this is a helpful lemma to tie the different approaches together.
+-/
+section tensor_and_direct_limit
+
+open_locale tensor_product
+
+universes u v w
+
+variables {R : Type u} [comm_ring R]
+variables {M : Type v} [add_comm_group M] [module R M]
+-- See comment below on `direct_lim_is_colim` about the `is_directed` and `nonempty` assumptions
+variables {ι : Type v} [decidable_eq ι] [preorder ι] [is_directed ι (≤)] [nonempty ι] 
+variables (G : ι → Type v) [Π i, add_comm_group (G i)] [Π i, module R (G i)]
+variables (f : Π i j, i ≤ j → G i →ₗ[R] G j) [directed_system G (λ i j h, f i j h)]
+
+-- #check associated_functor (λ(i : ι), (G i) ⊗[R] M) (λi j hij, begin dsimp, have H := f i j hij, have H2 := @linear_map.id R M _ _ _, exact tensor_product.map (H) H2, end)
+
+-- Need to show that the tensor product map has an instance of directed_system. 
+end tensor_and_direct_limit
+/-
+Next steps: 
+* That should be it in terms of administrative stuff before I can start working on flat modules!
+-/
+
 
 /-
 I should be able to copy some of the below when I eventually get to it, but ideally the general result is done first and then I copy it
@@ -143,8 +185,3 @@ I should be able to copy some of the below when I eventually get to it, but idea
 --   map_id' := λ _, by ext; refl,
 --   map_comp' := λ _ _ _ _ _, by ext; refl }
 
-/-
-Next steps: 
-* Show `lim (G i ⊗ M)` = `(lim G i) ⊗ M`. (this should be obvious, given the corresponding fact for colimits)
-* That should be it in terms of administrative stuff before I can start working on flat modules!
--/
