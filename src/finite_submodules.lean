@@ -22,7 +22,8 @@ def fin_submodule : Type v := { N : submodule R M // N.fg }
 namespace fin_submodule
 
 instance : has_sup (fin_submodule R M) := 
-{ sup := λ N P, ⟨↑N ⊔ ↑P, submodule.fg_sup N.prop P.prop⟩ }
+{ sup := λ N P, ⟨↑N ⊔ ↑P, submodule.fg.sup N.prop P.prop⟩ }
+
 
 instance : partial_order (fin_submodule R M) := 
 subtype.partial_order _
