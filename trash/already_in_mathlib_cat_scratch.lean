@@ -155,9 +155,49 @@ variables {ι : Type v} [decidable_eq ι] [preorder ι] [is_directed ι (≤)] [
 variables (G : ι → Type v) [Π i, add_comm_group (G i)] [Π i, module R (G i)]
 variables (f : Π i j, i ≤ j → G i →ₗ[R] G j) [directed_system G (λ i j h, f i j h)]
 
--- #check associated_functor (λ(i : ι), (G i) ⊗[R] M) (λi j hij, begin dsimp, have H := f i j hij, have H2 := @linear_map.id R M _ _ _, exact tensor_product.map (H) H2, end)
+instance tensor_with_const : directed_system (λ (i : ι), G i ⊗[R] M)
+    (λ (i j : ι) (h : i ≤ j),
+       ((λ (i j : ι) (hij : i ≤ j), id (tensor_product.map (f i j hij) linear_map.id)) i j h)):= 
+       { map_self := 
+       begin intros i x hi, simp, 
+       have H : f i i hi = (linear_map.id : G i →ₗ[R] G i),
+       {
+        ext x,
+        have H2 := directed_system.map_self (λi j hij, f i j hij) i,
+        simp at H2,
+        have H3 := H2 x,
+        rw H3,
+        refl,
+       },
+       rw H,
+       simp,   
+       end,
+  map_map := 
+  begin
+    intros i j k hij hjk x,
+    simp,
+    have H : (tensor_product.map (f j k hjk) linear_map.id).comp (tensor_product.map (f i j hij) linear_map.id) = (tensor_product.map (f i k (le_trans hij hjk)) linear_map.id),
+    begin
+      rw ←tensor_product.map_comp,
+      have H2 : (f j k hjk).comp (f i j hij) = (f i k (le_trans hij hjk)),
+      begin
+        ext y,
+        have H3 := directed_system.map_map (λi j hij, f i j hij) hij hjk,
+        simp at H3,
+        specialize H3 y,
+        exact H3,
+      end,
+      rw H2,
+      refl,
+    end,
+    rw ←H,
+    refl,
+  end }
 
--- Need to show that the tensor product map has an instance of directed_system. 
+#check associated_functor (λ(i : ι), (G i) ⊗[R] M) (λi j hij, begin dsimp, have H := f i j hij, have H2 := @linear_map.id R M _ _ _, exact tensor_product.map (H) H2, end)
+
+#check associated_functor G f
+
 end tensor_and_direct_limit
 /-
 Next steps: 
