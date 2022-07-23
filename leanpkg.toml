@@ -6,4 +6,3 @@ path = "src"
 
 [dependencies]
 mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "4e7e1ecd117deeac9ff6cec1402d57c7ad0783de"}
-twist = {git = "https://github.com/jjaassoonn/twist.git", rev = "8b12ca696c19c239c2e9deeab51c5dc04e586fed"}
