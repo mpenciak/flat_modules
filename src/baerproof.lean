@@ -1,3 +1,11 @@
+import enough_injectives.adjunction_Ab
+import category_theory.abelian.generator
+
+universes v
+variables (R : Ring.{v})
+
+example : category_theory.enough_injectives (Module.{v} R) := infer_instance
+#check category_theory.abelian.has_injective_coseparator
 
 
 /-
